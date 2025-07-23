@@ -25,14 +25,94 @@ cd pokemon_aplication
 
 ### **Usage**
 ```bash
-# 🚀 Start everything
+# 🚀 Start everything (One Command)
 ./setup.sh
 
 # 🛑 Stop everything  
 ./stop.sh
 
+# 🧹 Reset to fresh clone state
+./clean.sh
+
 # 📋 View logs
 tail -f backend.log frontend.log
+```
+
+### **Individual Service Control**
+
+**Start services separately:**
+```bash
+# 1. Start PostgreSQL first
+docker run -d --name pokemon-postgres \
+  -e POSTGRES_DB=pokemon_db \
+  -e POSTGRES_USER=pokemon_user \
+  -e POSTGRES_PASSWORD=pokemon_password \
+  -p 5432:5432 postgres:15-alpine
+
+# 2. Start Backend only (Terminal 1)
+cd backend
+npm install              # First time only
+npm run start:dev        # Development mode
+# OR
+npm run start           # Production mode
+
+# 3. Start Frontend only (Terminal 2)  
+cd frontend
+npm install              # First time only
+npm start               # Development server
+# OR
+ng serve                # Angular CLI command
+```
+
+**Individual service management:**
+```bash
+# Backend commands
+cd backend
+npm run start:dev       # Development with hot reload
+npm run start:debug     # Debug mode
+npm run start:prod      # Production mode
+npm run build           # Build for production
+npm run test            # Run tests
+
+# Frontend commands  
+cd frontend
+npm start              # Start dev server (port 4200)
+ng serve --port 4200   # Specify port
+ng build               # Build for production
+ng build --prod        # Production build
+ng test                # Run unit tests
+ng e2e                 # Run e2e tests
+```
+
+**Database management:**
+```bash
+# PostgreSQL commands
+docker start pokemon-postgres     # Start existing container
+docker stop pokemon-postgres      # Stop container
+docker restart pokemon-postgres   # Restart container
+docker logs pokemon-postgres      # View logs
+docker rm pokemon-postgres        # Remove container (deletes data!)
+
+# Reset database data
+docker stop pokemon-postgres && docker rm pokemon-postgres
+# Then run ./setup.sh to recreate fresh database
+```
+
+**Development workflow:**
+```bash
+# Daily development
+./setup.sh              # Start everything
+# ... do development work ...  
+./stop.sh               # Stop when done
+
+# Reset for testing
+./clean.sh              # Reset to fresh state
+./setup.sh              # Start fresh
+
+# Manual control
+# Terminal 1: cd backend && npm run start:dev
+# Terminal 2: cd frontend && npm start
+# Terminal 3: docker logs -f pokemon-postgres
 ```
 
 ### **After Setup**
@@ -101,7 +181,7 @@ tail -f backend.log frontend.log
 
 ### Backend (NestJS)
 - **Framework**: NestJS with TypeScript
-- **Database**: SQLite with TypeORM for data persistence
+- **Database**: PostgreSQL with TypeORM for data persistence
 - **Authentication**: JWT with Passport.js strategy
 - **File Processing**: Multer for CSV upload and processing
 - **Validation**: class-validator and class-transformer
@@ -510,6 +590,20 @@ open /Applications/Docker.app  # macOS
 # 4. Then try CSV import again
 ```
 
+**"409 Conflict" error when registering?**
+```bash
+# ✅ Solution: Username already exists in database!
+# Option 1: Try different username
+# Option 2: Reset database completely
+./clean.sh               # Reset everything
+./setup.sh               # Start fresh with empty database
+
+# Option 3: Remove just the database
+docker stop pokemon-postgres
+docker rm pokemon-postgres
+./setup.sh               # Will recreate fresh database
+```
+
 ### 🔧 Advanced Troubleshooting
 
 **Port conflicts:**
@@ -617,6 +711,7 @@ tail -f backend.log frontend.log
 - **"Cannot connect to Docker daemon"** → Start Docker Desktop
 - **"Port already in use"** → Run `./stop.sh` first
 - **"Unauthorized"** → Login required for CSV import
+- **"409 Conflict"** → Username already exists, try different name or reset database
 - **"EADDRINUSE"** → Port conflict, use `./stop.sh`
 - **"Module not found"** → Run `npm install` in affected directory
 
