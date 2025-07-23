@@ -1,0 +1,169 @@
+<!-- Use Angular Material Dialog structure -->
+<mat-dialog-content>
+  <!-- Header Card -->  
+  <mat-card class="pokemon-header-card">
+    <mat-card-header>
+      <div mat-card-avatar class="pokemon-avatar">
+        @if (data.image) {
+          <img [src]="data.image" [alt]="data.name" />
+        } @else {
+          <mat-icon>catching_pokemon</mat-icon>
+        }
+      </div>
+      <mat-card-title>{{ data.name }}</mat-card-title>
+      <mat-card-subtitle>#{{ data.id.toString().padStart(3, '0') }}</mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <!-- Types using Mat Chips -->
+      <div class="pokemon-types">
+        <mat-chip-set>
+          <mat-chip [class]="'type-' + data.type1.toLowerCase()">
+            {{ data.type1 }}
+          </mat-chip>
+          @if (data.type2) {
+            <mat-chip [class]="'type-' + data.type2.toLowerCase()">
+              {{ data.type2 }}
+            </mat-chip>
+          }
+        </mat-chip-set>
+      </div>
+      
+      @if (data.legendary) {
+        <mat-chip class="legendary-chip" color="accent">
+          <mat-icon matChipAvatar>star</mat-icon>
+          Legendary
+        </mat-chip>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Basic Info using Mat List -->
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>info</mat-icon>
+        Basic Information
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-list dense>
+        <mat-list-item>
+          <mat-icon matListItemIcon>layers</mat-icon>
+          <div matListItemTitle>Generation</div>
+          <div matListItemLine>{{ data.generation }}</div>
+        </mat-list-item>
+        <mat-list-item>
+          <mat-icon matListItemIcon>analytics</mat-icon>
+          <div matListItemTitle>Total Stats</div>
+          <div matListItemLine>{{ data.total }}</div>
+        </mat-list-item>
+        <mat-list-item>
+          <mat-icon matListItemIcon>category</mat-icon>
+          <div matListItemTitle>Type</div>
+          <div matListItemLine>{{ data.type1 }}{{ data.type2 ? ' / ' + data.type2 : '' }}</div>
+        </mat-list-item>
+      </mat-list>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Stats using Mat Cards and Progress Bars -->
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>bar_chart</mat-icon>
+        Battle Statistics
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="stats-grid">
+        <!-- HP -->
+        <div class="stat-item">
+          <div class="stat-header">
+            <span>HP</span>
+            <mat-chip>{{ data.hp }}</mat-chip>
+          </div>
+          <mat-progress-bar 
+            mode="determinate" 
+            [value]="getStatPercentage(data.hp)"
+            color="accent">
+          </mat-progress-bar>
+        </div>
+
+        <!-- Attack -->
+        <div class="stat-item">
+          <div class="stat-header">
+            <span>Attack</span>
+            <mat-chip>{{ data.attack }}</mat-chip>
+          </div>
+          <mat-progress-bar 
+            mode="determinate" 
+            [value]="getStatPercentage(data.attack)"
+            color="warn">
+          </mat-progress-bar>
+        </div>
+
+        <!-- Defense -->
+        <div class="stat-item">
+          <div class="stat-header">
+            <span>Defense</span>
+            <mat-chip>{{ data.defense }}</mat-chip>
+          </div>
+          <mat-progress-bar 
+            mode="determinate" 
+            [value]="getStatPercentage(data.defense)"
+            color="primary">
+          </mat-progress-bar>
+        </div>
+
+        <!-- Sp. Attack -->
+        <div class="stat-item">
+          <div class="stat-header">
+            <span>Sp. Attack</span>
+            <mat-chip>{{ data.spAttack }}</mat-chip>
+          </div>
+          <mat-progress-bar 
+            mode="determinate" 
+            [value]="getStatPercentage(data.spAttack)"
+            color="warn">
+          </mat-progress-bar>
+        </div>
+
+        <!-- Sp. Defense -->
+        <div class="stat-item">
+          <div class="stat-header">
+            <span>Sp. Defense</span>
+            <mat-chip>{{ data.spDefense }}</mat-chip>
+          </div>
+          <mat-progress-bar 
+            mode="determinate" 
+            [value]="getStatPercentage(data.spDefense)"
+            color="primary">
+          </mat-progress-bar>
+        </div>
+
+        <!-- Speed -->
+        <div class="stat-item">
+          <div class="stat-header">
+            <span>Speed</span>
+            <mat-chip>{{ data.speed }}</mat-chip>
+          </div>
+          <mat-progress-bar 
+            mode="determinate" 
+            [value]="getStatPercentage(data.speed)"
+            color="accent">
+          </mat-progress-bar>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</mat-dialog-content>
+
+<!-- Actions using Mat Dialog Actions -->
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">Close</button>
+  <button mat-raised-button color="primary" (click)="toggleFavorite()">
+    <mat-icon>{{ isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
+    {{ isFavorite ? 'Remove from Favorites' : 'Add to Favorites' }}
+  </button>
+</mat-dialog-actions> 

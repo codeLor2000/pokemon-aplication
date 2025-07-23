@@ -1,0 +1,122 @@
+<div class="favorites-container">
+  <!-- Header Section -->
+  <div class="favorites-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1>
+          <mat-icon>favorite</mat-icon>
+          My Favorite Pokémon
+        </h1>
+        <p>{{ favorites.length }} Pokémon in your favorites collection</p>
+      </div>
+      
+      <div class="header-actions">
+        @if (favorites.length > 0) {
+          <button 
+            mat-raised-button 
+            color="warn"
+            (click)="clearAllFavorites()">
+            <mat-icon>clear_all</mat-icon>
+            Clear All
+          </button>
+        }
+        <a 
+          mat-raised-button 
+          color="primary"
+          routerLink="/pokemon/list">
+          <mat-icon>add</mat-icon>
+          Add More Pokémon
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Favorites Grid -->
+  <div class="favorites-content">
+    @if (isLoading) {
+      <div class="loading-container">
+        <mat-spinner></mat-spinner>
+        <p>Loading favorites...</p>
+      </div>
+    } @else if (favorites.length === 0) {
+      <!-- Empty State -->
+      <div class="empty-state">
+        <mat-icon class="empty-icon">favorite_border</mat-icon>
+        <h3>No Favorite Pokémon Yet</h3>
+        <p>Start adding Pokémon to your favorites by clicking the heart icon in their detail view.</p>
+        <a mat-raised-button color="primary" routerLink="/pokemon/list">
+          <mat-icon>explore</mat-icon>
+          Explore Pokémon
+        </a>
+      </div>
+    } @else {
+      <!-- Favorites Grid -->
+      <div class="pokemon-grid">
+        @for (favorite of favorites; track favorite.id) {
+          <mat-card class="pokemon-card" (click)="viewPokemonDetails(favorite.pokemon)">
+            <div class="card-header">
+              <div class="favorite-date">
+                Added {{ formatDate(favorite.addedAt) }}
+              </div>
+              <button 
+                mat-icon-button 
+                color="warn"
+                (click)="removeFavorite($event, favorite.pokemon.id)"
+                class="remove-button">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            
+            <div class="pokemon-image">
+              @if (favorite.pokemon.image) {
+                <img [src]="favorite.pokemon.image" [alt]="favorite.pokemon.name" />
+              } @else {
+                <div class="placeholder-image">
+                  <mat-icon>catching_pokemon</mat-icon>
+                </div>
+              }
+            </div>
+            
+            <mat-card-content>
+              <h3>{{ favorite.pokemon.name }}</h3>
+              <p class="pokemon-id">#{{ favorite.pokemon.id.toString().padStart(3, '0') }}</p>
+              
+              <div class="pokemon-types">
+                <span class="type-badge" [class]="'type-' + favorite.pokemon.type1.toLowerCase()">
+                  {{ favorite.pokemon.type1 }}
+                </span>
+                @if (favorite.pokemon.type2) {
+                  <span class="type-badge" [class]="'type-' + favorite.pokemon.type2.toLowerCase()">
+                    {{ favorite.pokemon.type2 }}
+                  </span>
+                }
+              </div>
+
+              <div class="pokemon-stats">
+                <div class="stat">
+                  <span class="stat-label">HP:</span>
+                  <span class="stat-value">{{ favorite.pokemon.hp }}</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-label">Total:</span>
+                  <span class="stat-value">{{ favorite.pokemon.total }}</span>
+                </div>
+              </div>
+
+              @if (favorite.pokemon.legendary) {
+                <div class="legendary-badge">
+                  <mat-icon>star</mat-icon>
+                  Legendary
+                </div>
+              }
+              
+              <div class="favorite-indicator">
+                <mat-icon color="warn">favorite</mat-icon>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    }
+  </div>
+</div> 

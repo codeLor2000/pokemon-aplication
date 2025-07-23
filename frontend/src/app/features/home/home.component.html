@@ -1,0 +1,116 @@
+<div class="home-container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1>Welcome to the Pokémon World</h1>
+      <p>Discover, explore, and manage your favorite Pokémon!</p>
+      @if (!authService.isAuthenticated()) {
+        <div class="hero-actions">
+          <a mat-raised-button color="primary" routerLink="/auth/register">
+            Get Started
+          </a>
+          <a mat-button routerLink="/auth/login">
+            Already have an account?
+          </a>
+        </div>
+      } @else {
+        <div class="hero-actions">
+          <a mat-raised-button color="primary" routerLink="/pokemon/list">
+            View All Pokémon
+          </a>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- YouTube Video Carousel Section -->
+  <section class="video-section">
+    <div class="section-content">
+      <h2>Featured Pokémon Videos</h2>
+      <div class="video-carousel">
+        @for (video of pokemonVideos; track video.id) {
+          <div class="video-card">
+            <div class="video-wrapper">
+              <iframe 
+                [src]="getSanitizedUrl(video.videoId)" 
+                [title]="video.title"
+                frameborder="0" 
+                allowfullscreen>
+              </iframe>
+            </div>
+            <h3>{{ video.title }}</h3>
+            <p>{{ video.description }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- First 10 Pokémon Section -->
+  <section class="pokemon-preview-section">
+    <div class="section-content">
+      <div class="section-header">
+        <h2>First 10 Pokémon</h2>
+        @if (authService.isAuthenticated()) {
+          <a mat-button color="primary" routerLink="/pokemon/list">
+            View All
+            <mat-icon>arrow_forward</mat-icon>
+          </a>
+        }
+      </div>
+
+      @if (pokemonService.isLoading()) {
+        <div class="loading-container">
+          <mat-spinner></mat-spinner>
+          <p>Loading Pokémon...</p>
+        </div>
+      } @else if (pokemonList.length === 0) {
+        <div class="empty-state">
+          <mat-icon class="empty-icon">catching_pokemon</mat-icon>
+          <h3>No Pokémon Available</h3>
+          <p>Import some Pokémon data to get started!</p>
+          @if (authService.isAuthenticated()) {
+            <a mat-raised-button color="primary" routerLink="/pokemon/list">
+              Import Pokémon
+            </a>
+          }
+        </div>
+      } @else {
+        <div class="pokemon-grid">
+          @for (pokemon of pokemonList; track pokemon.id) {
+            <mat-card class="pokemon-card" (click)="viewPokemonDetails(pokemon)">
+              <div class="pokemon-image">
+                @if (pokemon.image) {
+                  <img [src]="pokemon.image" [alt]="pokemon.name" />
+                } @else {
+                  <div class="placeholder-image">
+                    <mat-icon>catching_pokemon</mat-icon>
+                  </div>
+                }
+              </div>
+              <mat-card-content>
+                <h3>{{ pokemon.name }}</h3>
+                <div class="pokemon-types">
+                  <span class="type-badge" [class]="'type-' + pokemon.type1.toLowerCase()">
+                    {{ pokemon.type1 }}
+                  </span>
+                  @if (pokemon.type2) {
+                    <span class="type-badge" [class]="'type-' + pokemon.type2.toLowerCase()">
+                      {{ pokemon.type2 }}
+                    </span>
+                  }
+                </div>
+                @if (pokemon.legendary) {
+                  <div class="legendary-badge">
+                    <mat-icon>star</mat-icon>
+                    Legendary
+                  </div>
+                }
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+      }
+    </div>
+  </section>
+</div> 

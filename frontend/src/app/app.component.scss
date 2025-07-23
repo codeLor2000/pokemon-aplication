@@ -1,0 +1,211 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  min-height: 64px;
+
+  .app-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.5rem;
+    font-weight: 600;
+
+    .title-icon {
+      font-size: 1.8rem;
+      width: 1.8rem;
+      height: 1.8rem;
+    }
+  }
+
+  .spacer {
+    flex: 1 1 auto;
+  }
+
+  // Main Navigation Menu
+  .main-nav {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-right: 24px;
+
+    a {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 24px;
+      transition: all 0.3s ease;
+      position: relative;
+
+      mat-icon {
+        font-size: 1.2rem;
+        width: 1.2rem;
+        height: 1.2rem;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      &.active-link {
+        background: rgba(255, 255, 255, 0.15);
+        font-weight: 600;
+      }
+    }
+  }
+
+  .user-menu {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .mobile-only {
+      display: none;
+    }
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  }
+
+  .auth-buttons {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    a {
+      text-decoration: none;
+    }
+  }
+}
+
+.app-sidenav-container {
+  flex: 1;
+  margin-top: 64px; // Account for fixed header
+}
+
+.app-sidenav {
+  width: 280px;
+  background: #fafafa;
+
+  .mat-mdc-list-item {
+    border-radius: 8px;
+    margin: 4px 12px;
+
+    &.mdc-list-item--activated {
+      background: rgba(103, 58, 183, 0.1);
+      color: #673ab7;
+
+      .mat-icon {
+        color: #673ab7;
+      }
+    }
+  }
+}
+
+.app-content {
+  background: #f8f9fa;
+  min-height: calc(100vh - 64px);
+}
+
+.main-content {
+  min-height: calc(100vh - 128px); // Account for header and footer
+  padding: 0;
+}
+
+.app-footer {
+  background: #2c3e50;
+  color: white;
+  padding: 24px 0;
+  margin-top: auto;
+
+  .footer-content {
+    text-align: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+
+    p {
+      margin: 4px 0;
+      opacity: 0.8;
+
+      &:first-child {
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0 12px;
+
+    .app-title {
+      font-size: 1.2rem;
+
+      .title-icon {
+        font-size: 1.5rem;
+        width: 1.5rem;
+        height: 1.5rem;
+      }
+    }
+
+    .main-nav {
+      display: none; // Hide main nav on mobile, use sidenav instead
+    }
+
+    .user-menu {
+      .mobile-only {
+        display: inline-flex; // Show favorites icon on mobile
+      }
+    }
+  }
+
+  .main-content {
+    padding: 16px;
+  }
+
+  .app-footer {
+    .footer-content {
+      padding: 0 16px;
+
+      p {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header {
+    .app-title {
+      font-size: 1rem;
+      
+      span:last-child {
+        display: none; // Hide "Application" text on very small screens
+      }
+    }
+
+    .user-menu button {
+      span:not(.mat-icon) {
+        display: none; // Hide username text on very small screens
+      }
+    }
+  }
+}

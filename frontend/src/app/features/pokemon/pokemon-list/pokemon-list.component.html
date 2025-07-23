@@ -1,0 +1,235 @@
+<div class="pokemon-list-container">
+  <!-- Header Section -->
+  <div class="list-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1>
+          <mat-icon>catching_pokemon</mat-icon>
+          Pokémon Management
+        </h1>
+        <p>Search, filter, and manage your Pokémon collection</p>
+      </div>
+      
+      <div class="header-actions">
+        <a 
+          mat-button
+          color="accent" 
+          routerLink="/pokemon/favorites">
+          <mat-icon>favorite</mat-icon>
+          View Favorites
+        </a>
+        <input 
+          #fileInput 
+          type="file" 
+          accept=".csv" 
+          (change)="onFileSelected($event)"
+          style="display: none;">
+        
+        <button 
+          mat-raised-button 
+          color="primary"
+          (click)="fileInput.click()"
+          [disabled]="isImporting">
+          <mat-icon>upload_file</mat-icon>
+          @if (isImporting) {
+            Importing...
+          } @else {
+            Import CSV
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Filter Section -->
+  <mat-card class="search-card">
+    <mat-card-content>
+      <form [formGroup]="searchForm">
+        <!-- Quick Search -->
+        <div class="search-row">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Search Pokémon</mat-label>
+            <input 
+              matInput 
+              formControlName="name" 
+              placeholder="Type Pokémon name..."
+              autocomplete="off">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <!-- Advanced Filters -->
+        <mat-expansion-panel class="filter-panel">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>tune</mat-icon>
+              Advanced Filters
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <div class="filter-content">
+            <div class="filter-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Type</mat-label>
+                <mat-select formControlName="type">
+                  <mat-option value="">All Types</mat-option>
+                  @for (type of pokemonTypes; track type) {
+                    <mat-option [value]="type">{{ type }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-checkbox formControlName="legendary">
+                Legendary Only
+              </mat-checkbox>
+            </div>
+
+            <div class="filter-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Min Speed</mat-label>
+                <input matInput type="number" formControlName="minSpeed" min="0" max="255">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Max Speed</mat-label>
+                <input matInput type="number" formControlName="maxSpeed" min="0" max="255">
+              </mat-form-field>
+            </div>
+
+            <div class="filter-actions">
+              <button 
+                mat-button 
+                type="button"
+                (click)="clearFilters()">
+                Clear Filters
+              </button>
+              <button 
+                mat-raised-button 
+                color="primary"
+                type="button"
+                (click)="applyFilters()">
+                Apply Filters
+              </button>
+            </div>
+          </div>
+        </mat-expansion-panel>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Results Section -->
+  <div class="results-section">
+    <!-- Loading State -->
+    @if (pokemonService.isLoading()) {
+      <div class="loading-container">
+        <mat-spinner></mat-spinner>
+        <p>Loading Pokémon...</p>
+      </div>
+    } @else if (pokemonList.length === 0 && !hasSearched) {
+      <!-- Empty State - No Data -->
+      <div class="empty-state">
+        <mat-icon class="empty-icon">catching_pokemon</mat-icon>
+        <h3>No Pokémon Data</h3>
+        <p>Import a CSV file to get started with your Pokémon collection.</p>
+        <button 
+          mat-raised-button 
+          color="primary"
+          (click)="fileInput.click()">
+          <mat-icon>upload_file</mat-icon>
+          Import CSV File
+        </button>
+      </div>
+    } @else if (pokemonList.length === 0 && hasSearched) {
+      <!-- No Results State -->
+      <div class="no-results-state">
+        <mat-icon class="no-results-icon">search_off</mat-icon>
+        <h3>No Results Found</h3>
+        <p>Try adjusting your search criteria or filters.</p>
+        <button 
+          mat-button 
+          color="primary"
+          (click)="clearFilters()">
+          Clear All Filters
+        </button>
+      </div>
+    } @else {
+      <!-- Pokemon Grid -->
+      <div class="results-header">
+        <div class="results-info">
+          <p>Showing {{ pokemonList.length }} of {{ totalCount }} Pokémon</p>
+        </div>
+        
+        <div class="results-actions">
+          <mat-form-field appearance="outline" class="page-size-selector">
+            <mat-label>Per Page</mat-label>
+            <mat-select [value]="pageSize" (selectionChange)="changePageSize($event.value)">
+              <mat-option [value]="10">10</mat-option>
+              <mat-option [value]="20">20</mat-option>
+              <mat-option [value]="50">50</mat-option>
+              <mat-option [value]="100">100</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="pokemon-grid">
+        @for (pokemon of pokemonList; track pokemon.id) {
+          <mat-card class="pokemon-card" (click)="viewPokemonDetails(pokemon)">
+            <div class="pokemon-image">
+              @if (pokemon.image) {
+                <img [src]="pokemon.image" [alt]="pokemon.name" />
+              } @else {
+                <div class="placeholder-image">
+                  <mat-icon>catching_pokemon</mat-icon>
+                </div>
+              }
+            </div>
+            
+            <mat-card-content>
+              <h3>{{ pokemon.name }}</h3>
+              
+              <div class="pokemon-types">
+                <span class="type-badge" [class]="'type-' + pokemon.type1.toLowerCase()">
+                  {{ pokemon.type1 }}
+                </span>
+                @if (pokemon.type2) {
+                  <span class="type-badge" [class]="'type-' + pokemon.type2.toLowerCase()">
+                    {{ pokemon.type2 }}
+                  </span>
+                }
+              </div>
+
+              <div class="pokemon-stats">
+                <div class="stat">
+                  <span class="stat-label">HP:</span>
+                  <span class="stat-value">{{ pokemon.hp }}</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-label">Speed:</span>
+                  <span class="stat-value">{{ pokemon.speed }}</span>
+                </div>
+              </div>
+
+              @if (pokemon.legendary) {
+                <div class="legendary-badge">
+                  <mat-icon>star</mat-icon>
+                  Legendary
+                </div>
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+
+      <!-- Pagination -->
+      <mat-paginator
+        [length]="totalCount"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[10, 20, 50, 100]"
+        [pageIndex]="currentPage - 1"
+        (page)="onPageChange($event)"
+        showFirstLastButtons>
+      </mat-paginator>
+    }
+  </div>
+</div> 

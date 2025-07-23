@@ -1,0 +1,27 @@
+<div class="breadcrumb-container">
+  <nav class="breadcrumb-nav">
+    @for (breadcrumb of breadcrumbs; track breadcrumb.url; let isLast = $last) {
+      <div class="breadcrumb-item">
+        @if (!isLast) {
+          <a [routerLink]="breadcrumb.url" class="breadcrumb-link">
+            @if (breadcrumb.icon) {
+              <mat-icon>{{ breadcrumb.icon }}</mat-icon>
+            }
+            {{ breadcrumb.label }}
+          </a>
+        } @else {
+          <span class="breadcrumb-current">
+            @if (breadcrumb.icon) {
+              <mat-icon>{{ breadcrumb.icon }}</mat-icon>
+            }
+            {{ breadcrumb.label }}
+          </span>
+        }
+        
+        @if (!isLast) {
+          <mat-icon class="breadcrumb-separator">chevron_right</mat-icon>
+        }
+      </div>
+    }
+  </nav>
+</div> 

@@ -1,0 +1,131 @@
+<div class="app-container">
+  <!-- Header -->
+  <mat-toolbar color="primary" class="app-header">
+    <button mat-icon-button (click)="toggleSidenav()" aria-label="Menu">
+      <mat-icon>menu</mat-icon>
+    </button>
+    
+    <span class="app-title">
+      <mat-icon class="title-icon">catching_pokemon</mat-icon>
+      Pokémon Application
+    </span>
+    
+    <span class="spacer"></span>
+    
+    <!-- Main Navigation Menu -->
+    @if (authService.isAuthenticated()) {
+      <div class="main-nav">
+        <a mat-button routerLink="/home" routerLinkActive="active-link">
+          <mat-icon>home</mat-icon>
+          Home
+        </a>
+        <a mat-button routerLink="/pokemon/list" routerLinkActive="active-link">
+          <mat-icon>list</mat-icon>
+          Pokémon List
+        </a>
+        <a mat-button routerLink="/pokemon/favorites" routerLinkActive="active-link"
+           [matBadge]="(favoritesService.getFavorites() | async)?.length || 0" 
+           [matBadgeHidden]="(favoritesService.getFavorites() | async)?.length === 0"
+           matBadgeColor="warn" 
+           matBadgeSize="small">
+          <mat-icon>favorite</mat-icon>
+          Favorites
+        </a>
+      </div>
+    }
+    
+    @if (authService.isAuthenticated()) {
+      <div class="user-menu">
+        <a mat-icon-button routerLink="/pokemon/favorites" 
+           [matBadge]="(favoritesService.getFavorites() | async)?.length || 0" 
+           [matBadgeHidden]="(favoritesService.getFavorites() | async)?.length === 0"
+           matBadgeColor="warn" 
+           matBadgeSize="small"
+           matTooltip="My Favorites"
+           class="mobile-only">
+          <mat-icon>favorite</mat-icon>
+        </a>
+        <button mat-button [matMenuTriggerFor]="userMenu">
+          <mat-icon>account_circle</mat-icon>
+          {{ authService.user()?.username }}
+          <mat-icon>arrow_drop_down</mat-icon>
+        </button>
+        <mat-menu #userMenu="matMenu">
+          <button mat-menu-item routerLink="/pokemon/list">
+            <mat-icon>list</mat-icon>
+            Pokémon List
+          </button>
+          <button mat-menu-item routerLink="/pokemon/favorites">
+            <mat-icon>favorite</mat-icon>
+            My Favorites
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            Logout
+          </button>
+        </mat-menu>
+      </div>
+    } @else {
+      <div class="auth-buttons">
+        <a mat-button routerLink="/auth/login">Login</a>
+        <a mat-raised-button color="accent" routerLink="/auth/register">Register</a>
+      </div>
+    }
+  </mat-toolbar>
+
+  <!-- Sidenav and Content -->
+  <mat-sidenav-container class="app-sidenav-container">
+    <mat-sidenav #sidenav mode="over" class="app-sidenav">
+      <mat-nav-list>
+        <h3 mat-subheader>Navigation</h3>
+        <a mat-list-item routerLink="/home" (click)="sidenav.close()">
+          <mat-icon matListItemIcon>home</mat-icon>
+          <span matListItemTitle>Home</span>
+        </a>
+        
+        @if (authService.isAuthenticated()) {
+          <a mat-list-item routerLink="/pokemon/list" (click)="sidenav.close()">
+            <mat-icon matListItemIcon>list</mat-icon>
+            <span matListItemTitle>Pokémon List</span>
+          </a>
+          <a mat-list-item routerLink="/pokemon/favorites" (click)="sidenav.close()">
+            <mat-icon matListItemIcon [matBadge]="(favoritesService.getFavorites() | async)?.length || 0" 
+                      [matBadgeHidden]="(favoritesService.getFavorites() | async)?.length === 0"
+                      matBadgeColor="warn" 
+                      matBadgeSize="small">favorite</mat-icon>
+            <span matListItemTitle>My Favorites</span>
+          </a>
+        } @else {
+          <a mat-list-item routerLink="/auth/login" (click)="sidenav.close()">
+            <mat-icon matListItemIcon>login</mat-icon>
+            <span matListItemTitle>Login</span>
+          </a>
+          <a mat-list-item routerLink="/auth/register" (click)="sidenav.close()">
+            <mat-icon matListItemIcon>person_add</mat-icon>
+            <span matListItemTitle>Register</span>
+          </a>
+        }
+      </mat-nav-list>
+    </mat-sidenav>
+
+    <mat-sidenav-content class="app-content">
+      <!-- Breadcrumb Navigation -->
+      @if (authService.isAuthenticated()) {
+        <app-breadcrumb></app-breadcrumb>
+      }
+      
+      <main class="main-content">
+        <router-outlet></router-outlet>
+      </main>
+      
+      <!-- Footer -->
+      <footer class="app-footer">
+        <div class="footer-content">
+          <p>&copy; 2024 Pokémon Application - Technical Assessment</p>
+          <p>Built with Angular & NestJS</p>
+        </div>
+      </footer>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

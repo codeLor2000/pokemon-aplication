@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # Backend API Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pokemon-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET:-pokemon-secret-key-production}
+    volumes:
+      # Persist database
+      - pokemon_db:/app/database
+    networks:
+      - pokemon-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Web Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pokemon-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - pokemon-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Database backup service (optional)
+  db-backup:
+    image: alpine:latest
+    container_name: pokemon-db-backup
+    restart: "no"
+    volumes:
+      - pokemon_db:/data
+      - ./backups:/backups
+    command: >
+      sh -c "
+        mkdir -p /backups &&
+        cp -r /data/* /backups/ &&
+        echo 'Database backup completed at $(date)'
+      "
+    depends_on:
+      - backend
+    networks:
+      - pokemon-network
+
+# Named volumes for data persistence
+volumes:
+  pokemon_db:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/pokemon_db
+
+# Custom network
+networks:
+  pokemon-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16 
