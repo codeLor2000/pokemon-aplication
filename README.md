@@ -2,6 +2,47 @@
 
 A modern full-stack web application built with **Angular 17** (frontend) and **NestJS** (backend) for Pokémon management, exploration, and favorites collection.
 
+## 🚀 **QUICK START - One Command Setup**
+
+**Want to run the entire application instantly? Just run:**
+
+```bash
+git clone <your-repository-url>
+cd pokemon_aplication
+./setup.sh
+```
+
+**That's it!** 🎉 The script will automatically:
+- ✅ **Install all dependencies** (backend + frontend)
+- ✅ **Start PostgreSQL database** (Docker container)
+- ✅ **Launch NestJS backend** (http://localhost:3000)
+- ✅ **Launch Angular frontend** (http://localhost:4200)
+
+### **Prerequisites (Auto-checked)**
+- **Node.js** v20.17.0+ 
+- **npm** (comes with Node.js)
+- **Docker** (for PostgreSQL database)
+
+### **Usage**
+```bash
+# 🚀 Start everything
+./setup.sh
+
+# 🛑 Stop everything  
+./stop.sh
+
+# 📋 View logs
+tail -f backend.log frontend.log
+```
+
+### **After Setup**
+1. **Open browser**: http://localhost:4200
+2. **Register/Login**: Create account or sign in
+3. **Import Pokemon**: Upload CSV files (authentication required)
+4. **Explore features**: Search, filter, favorites, and more!
+
+---
+
 ## 🌟 Features
 
 ### Authentication & Security
@@ -19,7 +60,7 @@ A modern full-stack web application built with **Angular 17** (frontend) and **N
 - ✅ Beautiful type color coding and legendary status indicators
 
 ### Pokémon Management System
-- ✅ **CSV Import**: Bulk import functionality with file validation
+- ✅ **CSV Import**: Bulk import functionality with file validation (requires login)
 - ✅ **Advanced Search**: Real-time search with 300ms debounce timing
 - ✅ **Multi-Filter System**:
   - Type filtering (dropdown with all available types)
@@ -124,61 +165,88 @@ pokemon_aplication/
 └── README.md
 ```
 
-## 🚀 Getting Started
+## 🛠️ Alternative Setup Methods
 
-### Prerequisites
-- **Node.js**: v20.17.0 or higher
-- **npm**: v11.4.1 or higher
-- **Angular CLI**: Latest version (optional but recommended)
+**Already used the quick setup? Great! Skip this section.**  
+**Need manual control? Here are alternative methods:**
 
-### Quick Installation & Setup
+### Method 1: 📋 Manual Step-by-Step
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd pokemon_aplication
-   ```
+**Prerequisites:**
+- **Node.js** v20.17.0+
+- **npm** 11.4.1+  
+- **Docker** (for PostgreSQL)
 
-2. **Install all dependencies**
-   ```bash
-   npm run install:all
-   ```
-
-3. **Start development servers**
-   ```bash
-   npm run dev
-   ```
-
-   This will start:
-   - **Backend API**: `http://localhost:3000`
-   - **Frontend App**: `http://localhost:4200`
-   
-   The application will automatically open in your default browser.
-
-### Individual Development Servers
-
-**Backend only:**
+**Steps:**
 ```bash
-npm run backend:dev
-# Starts NestJS server on port 3000
+# 1. Clone and enter directory
+git clone <repository-url>
+cd pokemon_aplication
+
+# 2. Install dependencies
+cd backend && npm install && cd ..
+cd frontend && npm install && cd ..
+
+# 3. Start PostgreSQL (Docker)
+docker run -d --name pokemon-postgres \
+  -e POSTGRES_DB=pokemon_db \
+  -e POSTGRES_USER=pokemon_user \
+  -e POSTGRES_PASSWORD=pokemon_password \
+  -p 5432:5432 postgres:15-alpine
+
+# 4. Start Backend (Terminal 1)
+cd backend && npm run start:dev
+
+# 5. Start Frontend (Terminal 2) 
+cd frontend && npm start
 ```
 
-**Frontend only:**
+### Method 2: 🐳 Docker Compose (Full Stack)
+
 ```bash
-npm run frontend:dev  
-# Starts Angular dev server on port 4200
+# Build and run with Docker
+docker-compose up -d
+
+# Access applications
+# Frontend: http://localhost
+# Backend: http://localhost:3000
 ```
 
-## 🔧 Configuration
+### Method 3: 🔧 Makefile Commands
 
-### Backend Environment
-Default configuration works out of the box. Customize if needed:
+```bash
+# Install dependencies
+make install
 
-```typescript
-// Default values
-JWT_SECRET: 'pokemon-secret-key'
-PORT: 3000
-DATABASE: 'pokemon.db' (SQLite - auto-created)
+# Start development environment
+make dev-backend    # Terminal 1
+make dev-frontend   # Terminal 2
+
+# Or use quick start (Docker)
+make quick-start
+```
+
+## 📄 Configuration
+
+### Database (PostgreSQL)
+The application automatically uses **PostgreSQL** via Docker container:
+
+```bash
+# Auto-created PostgreSQL container
+Container: pokemon-postgres
+Database: pokemon_db
+User: pokemon_user  
+Password: pokemon_password
+Port: 5432 (PostgreSQL) → http://localhost:5432
+```
+
+### Backend Environment (.env auto-created)
+```bash
+NODE_ENV=development
+PORT=3000
+JWT_SECRET=pokemon-secret-key
+DATABASE_URL=postgresql://pokemon_user:pokemon_password@localhost:5432/pokemon_db
+FRONTEND_URL=http://localhost:4200
 ```
 
 ### Frontend Configuration
@@ -186,26 +254,53 @@ DATABASE: 'pokemon.db' (SQLite - auto-created)
 - **Material Theme**: Custom Pokémon-themed color palette
 - **Responsive Breakpoints**: Mobile (768px), Tablet (1024px), Desktop (1200px+)
 
+## 🔐 Important: Authentication Required
+
+### ⚠️ **CSV Import Requires Login**
+- **CSV import endpoint is PROTECTED** 
+- **You must register/login first** before importing CSV files
+- Anonymous users will get **"Unauthorized"** error
+
+### Authentication Flow
+1. **Register**: `POST /api/auth/register` → Get JWT token
+2. **Login**: `POST /api/auth/login` → Get JWT token  
+3. **Import CSV**: `POST /api/pokemon/import` (with JWT token)
+
 ## 📊 API Documentation
 
 ### Authentication Endpoints
 ```typescript
-POST /api/auth/register    # User registration
-POST /api/auth/login       # User login  
-GET  /api/auth/profile     # Get current user (protected)
+POST /api/auth/register    # User registration → JWT token
+POST /api/auth/login       # User login → JWT token
+GET  /api/auth/profile     # Get current user (🔒 protected)
 ```
 
 ### Pokémon Management Endpoints
 ```typescript
-GET  /api/pokemon/first-ten      # Get first 10 Pokémon for home page
-GET  /api/pokemon/search         # Advanced search with filters
-GET  /api/pokemon/types          # Get all available Pokémon types
-GET  /api/pokemon/:id            # Get specific Pokémon by ID
-POST /api/pokemon/import         # CSV import (protected)
-GET  /api/pokemon/count          # Get total Pokémon count
+GET  /api/pokemon/first-ten      # Get first 10 Pokémon (public)
+GET  /api/pokemon/search         # Advanced search with filters (public)
+GET  /api/pokemon/types          # Get all available Pokémon types (public)
+GET  /api/pokemon/:id            # Get specific Pokémon by ID (public)
+POST /api/pokemon/import         # CSV import (🔒 protected - JWT required)
+POST /api/pokemon/clear-all      # Delete all Pokémon (🔒 protected)
+GET  /api/pokemon/count          # Get total Pokémon count (public)
 ```
 
 ### Request/Response Examples
+
+**User Registration:**
+```typescript
+POST /api/auth/register
+{
+  "username": "pokemon_trainer",
+  "password": "secure_password123"
+}
+
+Response: {
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": { "id": 1, "username": "pokemon_trainer" }
+}
+```
 
 **Search with filters:**
 ```typescript
@@ -215,7 +310,23 @@ Response: {
   data: Pokemon[],
   total: number,
   page: number,
-  limit: number
+  limit: number,
+  totalPages: number
+}
+```
+
+**CSV Import (with authentication):**
+```typescript
+POST /api/pokemon/import
+Headers: {
+  "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+Body: FormData with CSV file
+
+Response: {
+  "message": "Successfully imported X Pokemon",
+  "imported": number,
+  "errors": []
 }
 ```
 
@@ -372,111 +483,222 @@ This project is developed as a technical assessment demonstration and is for edu
 
 ## 🙋‍♂️ Support & Troubleshooting
 
-### Common Issues
+### ⚡ Quick Fixes
 
-**Port conflicts:**  
+**Application won't start with `./setup.sh`?**
 ```bash
-# Check if ports are in use
-lsof -i :3000  # Backend
-lsof -i :4200  # Frontend
+# Check prerequisites
+node --version    # Should be v20.17.0+
+npm --version     # Should be v11.4.1+
+docker --version  # Should be installed
+
+# Make sure Docker is running
+open /Applications/Docker.app  # macOS
+# Or restart Docker Desktop
+
+# Clean restart
+./stop.sh        # Stop everything
+./setup.sh       # Start fresh
 ```
 
-**Database issues:**
+**"Unauthorized" error when importing CSV?**
 ```bash
-# Reset database (delete pokemon.db in backend folder)
-rm backend/pokemon.db
-# Restart backend to regenerate
+# ✅ Solution: You MUST login first!
+# 1. Open http://localhost:4200
+# 2. Click "Register" or "Login"  
+# 3. Create account or sign in
+# 4. Then try CSV import again
 ```
 
-**Dependencies:**
+### 🔧 Advanced Troubleshooting
+
+**Port conflicts:**
 ```bash
-# Clean install
+# Check what's using ports
+lsof -i :3000  # Backend (NestJS)
+lsof -i :4200  # Frontend (Angular)
+lsof -i :5432  # PostgreSQL
+
+# Kill conflicting processes
+./stop.sh      # Stops all Pokemon app services
+```
+
+**PostgreSQL database issues:**
+```bash
+# Reset PostgreSQL data
+docker stop pokemon-postgres
+docker rm pokemon-postgres    # ⚠️ This deletes all data!
+./setup.sh                     # Recreates fresh database
+
+# View PostgreSQL logs
+docker logs pokemon-postgres
+```
+
+**Backend won't connect to database:**
+```bash
+# Check PostgreSQL container status
+docker ps | grep postgres
+
+# Restart database
+docker restart pokemon-postgres
+
+# Check backend logs
+tail -f backend.log
+```
+
+**Frontend build errors:**
+```bash
+# Clear Angular cache
+cd frontend
+rm -rf node_modules .angular dist
+npm install
+
+# Check frontend logs  
+tail -f ../frontend.log
+```
+
+**Dependencies issues:**
+```bash
+# Clean install everything
+./stop.sh
+
+# Backend clean
+cd backend
 rm -rf node_modules package-lock.json
 npm install
+cd ..
+
+# Frontend clean  
+cd frontend
+rm -rf node_modules package-lock.json .angular
+npm install
+cd ..
+
+# Restart
+./setup.sh
 ```
 
-### Getting Help
-- Check browser console for frontend errors
-- Check terminal output for backend errors  
-- Ensure all dependencies are properly installed
-- Verify Node.js and npm versions meet requirements
+### 📊 Service Status Check
+
+```bash
+# Check all services
+curl http://localhost:3000/api    # Backend health
+curl http://localhost:4200        # Frontend health
+docker ps | grep postgres         # Database status
+
+# View all logs together
+tail -f backend.log frontend.log
+```
+
+### 🆘 Getting Help
+
+**Before asking for help, please provide:**
+1. **OS and versions**: 
+   ```bash
+   uname -a                    # OS info
+   node --version              # Node.js version
+   npm --version               # npm version
+   docker --version            # Docker version
+   ```
+
+2. **Error logs**:
+   ```bash
+   tail -50 backend.log        # Last 50 backend log lines
+   tail -50 frontend.log       # Last 50 frontend log lines
+   ```
+
+3. **Service status**:
+   ```bash
+   docker ps                   # Running containers
+   lsof -i :3000 -i :4200 -i :5432  # Port usage
+   ```
+
+**Common Error Messages:**
+- **"Cannot connect to Docker daemon"** → Start Docker Desktop
+- **"Port already in use"** → Run `./stop.sh` first
+- **"Unauthorized"** → Login required for CSV import
+- **"EADDRINUSE"** → Port conflict, use `./stop.sh`
+- **"Module not found"** → Run `npm install` in affected directory
 
 ## 🚀 Deployment
 
-### Local Docker Deployment
-
-**Quick Start with Docker:**
-```bash
-# Option 1: Using Makefile (Recommended)
-make quick-start
-
-# Option 2: Using Docker Compose
-docker-compose up -d
-
-# Option 3: Using build script
-./deployment/docker-build.sh
-docker-compose up -d
-```
-
-**Available Make Commands:**
-```bash
-make help           # Show all available commands
-make build          # Build Docker images
-make up             # Start services
-make down           # Stop services
-make logs           # View logs
-make clean          # Clean up resources
-```
-
 ### ☁️ Cloud Deployment Options
+
+The application is ready for deployment on various platforms:
 
 #### 🌟 **Railway (Recommended)**
 - **Free Tier**: $5 credits/month
-- **Docker Support**: Native Docker deployment
+- **Native Docker Support**: Perfect for this stack
 - **Auto-Deploy**: GitHub integration
 
 ```bash
-# Deploy to Railway
 npm install -g @railway/cli
 railway login
 railway up
 ```
-📖 **[Complete Railway Guide](./deployment/railway-deploy.md)**
 
 #### 🎯 **Render**
 - **Free Tier**: 750 hours/month
-- **PostgreSQL**: Free database included
+- **Free PostgreSQL**: 1GB database included
 - **Auto-Deploy**: GitHub integration
 
-```bash
-# Deploy to Render (auto-deploys on git push)
-git push origin main
-```
-📖 **[Complete Render Guide](./deployment/render-deploy.md)**
-
 #### ⚡ **Other Options**
-- **Vercel + PlanetScale**: Serverless deployment
-- **Netlify + Supabase**: JAMstack approach
+- **Vercel + PlanetScale**: Serverless approach
+- **Netlify + Supabase**: JAMstack deployment
 - **DigitalOcean**: VPS deployment
 
-📖 **[Full Deployment Guide](./deployment/deployment-overview.md)**
+### 🐳 Docker Production
 
-### 🐳 Docker Configuration
+```bash
+# Build production images
+docker build -t pokemon-backend ./backend
+docker build -t pokemon-frontend ./frontend
 
-**Multi-stage Dockerfile builds:**
-- **Backend**: Node.js Alpine with security hardening
-- **Frontend**: Nginx Alpine with Angular SPA support
-- **Production-ready**: Health checks, non-root users, optimized layers
+# Deploy with docker-compose
+docker-compose -f docker-compose.prod.yml up -d
+```
 
-**Docker Features:**
-- ✅ Multi-stage builds for smaller images
-- ✅ Health checks for both services
-- ✅ Security hardening (non-root users)
-- ✅ Volume persistence for database
-- ✅ Custom network configuration
-- ✅ Automatic restarts
+## 📚 Additional Resources
+
+- 📖 **[Complete Deployment Guide](./deployment/deployment-overview.md)**
+- 📖 **[Railway Deployment](./deployment/railway-deploy.md)**
+- 📖 **[Database Setup Guide](./DATABASE_SETUP.md)**
+
+## 🤝 Contributing
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### Development Guidelines
+- Follow Angular and NestJS best practices
+- Write comprehensive tests
+- Update documentation
+- Use conventional commit messages
 
 ---
 
-**Built with ❤️ using Angular 17 & NestJS**  
-*A modern, responsive, and feature-rich Pokémon management application* 
+## 🎉 **Quick Recap**
+
+**Getting started is super simple:**
+
+```bash
+git clone <your-repository-url>
+cd pokemon_aplication
+./setup.sh
+```
+
+**Then enjoy:**
+- 🌐 **Frontend**: http://localhost:4200
+- 🔧 **Backend**: http://localhost:3000  
+- 🐘 **PostgreSQL**: Fully managed via Docker
+
+**Built with ❤️ using:**
+- **Frontend**: Angular 17 + Angular Material
+- **Backend**: NestJS + TypeORM + JWT Auth
+- **Database**: PostgreSQL
+- **Deployment**: Docker + Multiple cloud options
+
+*A modern, responsive, and feature-rich Pokémon management application ready for production! 🎮✨* 
